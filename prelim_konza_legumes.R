@@ -63,6 +63,8 @@ chart.Correlation(cover[,3:15], histogram=T, pch=19)
 
 
 
+
+
 #### Legume Stem Densities ####
 
 stems <- all %>% 
