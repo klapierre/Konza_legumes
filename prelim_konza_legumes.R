@@ -6,6 +6,7 @@
 
 library(readxl)
 library(PerformanceAnalytics)
+library(pscl)
 library(tidyverse)
 
 setwd('C:\\Users\\kjkomatsu\\Dropbox (Smithsonian)\\konza projects\\legume dynamics')
@@ -52,7 +53,9 @@ surroundingSpp <- all %>%
 cover <- all %>% 
   filter(!(taxa %in% c('Total grass', 'Total forb'))) %>% 
   left_join(totCover) %>% 
-  mutate(rel_cover=cover/total_cover) %>% 
+  mutate(rel_cover=100*cover/total_cover) %>%
+  separate(taxa, into=c('genus', 'species'), sep=' ') %>%
+  unite(genus:species, col='taxa', sep='_') %>% 
   select(-stemcount, -cover, -total_cover, -surroundingspp) %>% 
   pivot_wider(names_from=taxa, values_from=rel_cover, values_fill=0) %>% 
   left_join(functionalGroup) %>% 
@@ -62,7 +65,25 @@ cover <- all %>%
 chart.Correlation(cover[,3:15], histogram=T, pch=19)
 
 
+#amorpha vs lespedeza
+ggplot(data=subset(cover, Lespedeza_capitata<9 & Amorpha_canescens<40), aes(x=Amorpha_canescens, y=Lespedeza_capitata)) +
+  geom_smooth(method='lm', formula=y~poly(x,2), se=F, color='#555555', size=2) +
+  geom_point(size=2, color='#00760A') +
+  xlab('AMCA Relative % Cover') + ylab('LECA Relative % Cover')
 
+#model
+with(subset(cover, Lespedeza_capitata<9 & Amorpha_canescens<40), cor.test(Lespedeza_capitata, Amorpha_canescens))
+# t = -5.8281, df = 144, p-value = 3.527e-08, r=-0.4368776 
+
+
+#dalea vs lespedeza
+ggplot(data=subset(cover, Lespedeza_capitata<0.09), aes(x=Lespedeza_capitata, y=Dalea_candida)) +
+  geom_point() +
+  geom_smooth(method='lm', formula=y~poly(x,2), se=F)
+
+#model
+with(subset(cover, Lespedeza_capitata<9 & Amorpha_canescens<40), cor.test(Lespedeza_capitata, Amorpha_canescens, method='kendall'))
+# t = -5.8281, df = 144, p-value = 3.527e-08, r=-0.4368776 
 
 
 #### Legume Stem Densities ####
